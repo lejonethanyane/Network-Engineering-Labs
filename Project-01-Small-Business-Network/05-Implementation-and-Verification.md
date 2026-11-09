@@ -1066,6 +1066,8 @@ This approach was used to distinguish configuration errors from expected network
 | T05 | Initial test-server address conflicted with the reserved gateway addressing plan | Changed the server address to 192.168.50.10 | Server connectivity verified |
 | T06 | Interface descriptions required correction | Updated the affected switchport descriptions | Port documentation corrected |
 | T07 | Inter-VLAN communication was permitted before ACL implementation | Applied extended ACLs and performed before-and-after testing | Intended traffic restrictions verified |
+| T08 | HSRP gateway failover succeeded, but Sales-to-Server connectivity failed | Identified the missing VLAN 10 route on SW1; temporarily changed the server gateway to SW2 for testing | Connectivity recovered during the test; original settings restored. Full end-to-end resilience remains unverified |
+
 
 ### 9.3 Issue T01 — Unexpected STP Root Bridge Election
 
@@ -1341,7 +1343,85 @@ The simulated implementation reinforced several network engineering principles:
 9. **Document limitations:** Clearly distinguish verified functionality from planned features and outstanding testing.
 10. **Use evidence:** CLI outputs, ping results and configuration checkpoints make troubleshooting conclusions more defensible.
 
-### 9.11 Remaining Technical Risks
+
+### 9.11 Issue T08 — HSRP Failover and Return-Path Routing
+
+**Observed Symptom:**
+
+During controlled HSRP failover testing, the VLAN 10 SVI on CORE-L3-SW1 was administratively shut down.
+
+CORE-L3-SW2 successfully transitioned from Standby to Active for HSRP Group 10.
+
+However, GF-SALES-PC1 initially could not reach the HSRP virtual gateway or GF-TEST-SERVER1.
+
+**Investigation:**
+
+The following checks were performed:
+
+1. Confirmed that CORE-L3-SW2 had become the Active HSRP gateway for VLAN 10.
+2. Verified that GF-SALES-PC1 could reach CORE-L3-SW2 directly at 192.168.10.3.
+3. Repeated the virtual gateway test and confirmed successful connectivity to 192.168.10.1.
+4. Inspected the routing table on CORE-L3-SW1 and found that the directly connected route to 192.168.10.0/27 had disappeared while VLAN 10 was shut down.
+5. Identified that GF-TEST-SERVER1 was using CORE-L3-SW1 (192.168.50.2) as its default gateway.
+
+These observations suggested an asymmetric return-path routing issue.
+
+**Diagnostic Action:**
+
+The server's default gateway was temporarily changed:
+
+- Original gateway: 192.168.50.2 — CORE-L3-SW1
+- Temporary gateway: 192.168.50.3 — CORE-L3-SW2
+
+Sales-to-Server connectivity was tested again.
+
+**Observed Result:**
+
+An initial ping attempt failed. A subsequent test successfully received four replies with 0% packet loss.
+
+This result was consistent with the suspected return-path problem. However, the exact contribution of routing changes and convergence delays was not conclusively isolated.
+
+**Recovery Procedure:**
+
+1. Restored the VLAN 10 SVI on CORE-L3-SW1 using `no shutdown`.
+2. Confirmed that CORE-L3-SW1 reclaimed the Active HSRP role for VLAN 10.
+3. Restored the server's original default gateway to 192.168.50.2.
+4. Repeated the Sales workstation connectivity and security tests.
+
+**Final Verification Results:**
+
+| Test | Result |
+|---|---|
+| Sales to HSRP gateway | Passed — final test 4/4 replies |
+| Sales to internal server | Passed — 4/4 replies |
+| Sales to Finance | Blocked — 0/4 replies |
+| HSRP VLAN 10 recovery | CORE-L3-SW1 Active |
+| HSRP VLAN 20 | CORE-L3-SW2 Active |
+
+**Remaining Limitations:**
+
+- Continuous connectivity during failover was not demonstrated.
+- Failover recovery time and packet loss were not measured.
+- VLAN 50 does not yet have a redundant virtual default gateway.
+- A complete resilient routing design requires further implementation and testing.
+
+**Lesson Learned:**
+
+HSRP control-plane failover does not automatically guarantee end-to-end connectivity.
+
+Both the forward and return routing paths must remain available during a failure.
+
+**Supporting Evidence:**
+
+- [VLAN 10 shutdown](evidence/29-core-sw1-vlan10-shutdown.png)
+- [HSRP takeover on CORE-L3-SW2](evidence/30-core-sw2-vlan10-hsrp-takeover.png)
+- [Connectivity restored during troubleshooting](evidence/31-sales-server-connectivity-restored.png)
+- [HSRP roles restored](evidence/32-core-sw1-hsrp-recovered.png)
+- [Post-failover connectivity verification](evidence/33-sales-post-failover-verification.png)
+- [Final gateway stability test](evidence/34-sales-gateway-final-stability.png)
+
+
+### 9.12 Remaining Technical Risks
 
 The following items still require attention before the simulated design can be considered fully validated:
 
@@ -1384,7 +1464,7 @@ Verification was performed using Cisco IOS operational commands and endpoint con
 | Access ports | Implemented | Connected endpoints and unused ports checked |
 | Inter-VLAN routing | Implemented | Tested endpoint connectivity passed |
 | SVI addressing | Implemented | Nine SVIs configured on each core switch |
-| HSRP — VLAN 10 | Implemented | Control-plane failover passed |
+| HSRP — VLAN 10 | Implemented | Control-plane failover and recovery verified; end-to-end connectivity initially failed during failover (see T08) |
 | HSRP — VLAN 20 | Implemented | Control-plane failover passed |
 | HSRP — Remaining VLANs | Pending | Not yet tested |
 | Sales-to-Finance ACL | Implemented | Blocked traffic verified |
@@ -1420,6 +1500,7 @@ These results confirm the observed behaviour of the tested configurations. They 
 The following activities remain before the complete design can be considered validated:
 
 - Configure first-hop gateway redundancy for the remaining VLANs where required.
+- Design and validate resilient return-path routing during VLAN 10 HSRP failover, then repeat Sales-to-Server connectivity testing using the server's normal default gateway (see Issue T08).
 - Verify STP root bridges and port roles for all planned VLANs.
 - Perform controlled physical uplink failure tests.
 - Measure packet loss and approximate recovery time during failover.
@@ -1440,6 +1521,9 @@ The following Packet Tracer checkpoints were retained during the implementation.
 |---|---|---|
 | Pre-ACL | Northstar-Project01-Pre-ACL-v09.pkt | Connectivity baseline before security policy enforcement |
 | Post-ACL | Northstar-Project01-ACL-Validated-v10.pkt | Validated Sales and Guest ACL configuration |
+| HSRP Failover Test | Northstar-Project01-HSRP-Failover-Test-v11.pkt | Working copy created for controlled HSRP failover and troubleshooting |
+| Post-Failover Recovery | Northstar-Project01-HSRP-Failover-Recovered-v12.pkt | Recovered network configuration after restoring the original gateways and verifying connectivity |
+
 
 The checkpoints provide reference points for troubleshooting, comparison and rollback.
 
@@ -1490,7 +1574,7 @@ The strongest verified outcomes include:
 
 - Correct departmental VLAN segmentation.
 - Successful routing between permitted internal networks.
-- HSRP role failover for two configured VLANs.
+- HSRP role failover for VLANs 10 and 20, with a return-path connectivity limitation identified during VLAN 10 failover testing (see Issue T08).
 - Selective blocking of Sales-to-Finance traffic.
 - Guest isolation across tested internal destinations.
 - Consistent Guest-to-Finance restrictions on both core switches.
@@ -1507,3 +1591,4 @@ The implementation also identified additional work required to validate full net
 **Deployment Environment:** Cisco Packet Tracer simulation.
 
 **Production Deployment Status:** Not deployed.
+
