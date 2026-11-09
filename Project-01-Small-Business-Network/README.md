@@ -35,6 +35,15 @@ The simulated topology consists of:
 
 The physical connections and switch interfaces are documented using Cisco Discovery Protocol (CDP).
 
+
+### Packet Tracer Simulation
+
+[Open the Project 01 Packet Tracer file (.pkt)](Northstar-Project01-HSRP-Failover-Recovered-v12.pkt)
+
+Download the file from GitHub and open it using Cisco Packet Tracer to explore the implemented network configuration.
+
+**Simulation Status:** Core network functionality implemented and tested. Full resilience validation remains outstanding.
+
 ## 3. Network Architecture
 
 The network uses nine VLANs to separate departments and infrastructure services.
