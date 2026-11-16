@@ -137,10 +137,10 @@ Each project represents an original, simulated business networking scenario.
 | Project | Description | Status |
 |---|---|---|
 | [Project 01](Project-01-Small-Business-Network/) | Small Business Network Design, VLAN Segmentation and Inter-VLAN Routing | Core Implemented — Further Resilience Testing Pending |
-| Project 02 | Enterprise Static Routing and Connectivity Troubleshooting | Planned |
-| Project 03 | OSPF Routing and Network Resilience | Planned |
-| Project 04 | Network Security Using Access Control Lists | Planned |
-| Project 05 | Network Redundancy and High Availability | Planned |
+| [Project 02](Project-02-OSPF-Routing-and-Troubleshooting/) | OSPF Routing, Connectivity and Incident Troubleshooting | In Progress — 2 Incidents Resolved |
+| Project 03 |BGP Peering and Route Troubleshooting | Planned |
+| Project 04 | Linux Network Administration and Connectivity Troubleshooting | Planned |
+| Project 05 |MPLS and Service Provider Networking Fundamentals | Planned |
 
 
 Detailed project documentation and links will be added as each project is completed.
