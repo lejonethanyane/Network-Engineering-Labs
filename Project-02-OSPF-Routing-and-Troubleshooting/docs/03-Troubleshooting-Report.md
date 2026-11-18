@@ -225,4 +225,16 @@ The Hello interval was restored to 10 seconds before the area mismatch test.
 - Lab documentation should distinguish observed behaviour from expected behaviour.
 
 
-## Incident 03 — Pending
+## Incident 03 — OSPF Cost and Route Selection Troubleshooting
+
+**Incident ID:** INC-003
+
+**Status:** Resolved
+
+**Incident Type:** Controlled OSPF metric change
+
+**Affected Router:** R1
+
+**Affected Interface:** GigabitEthernet0/0
+
+**Destination Network:** 10.0.23.0/30
