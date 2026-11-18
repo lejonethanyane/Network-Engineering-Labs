@@ -66,9 +66,26 @@ The interface was restored to Area 0, after which FULL neighbour adjacencies, ex
 - [OSPF area mismatch](evidence/incident-02/01-OSPF-Area-Mismatch.png)
 - [OSPF area restored](evidence/incident-02/02-OSPF-Area-Restored.png)
 
-### Incident 03 — Pending
+### Incident 03 — OSPF Cost and Route Selection
 
-A further troubleshooting scenario will be implemented and documented.
+**Status: Resolved**
+
+A controlled OSPF metric change was introduced by increasing R1's GigabitEthernet0/0 interface cost from 1 to 10.
+
+Before the change, R1 had two equal-cost routes to 10.0.23.0/30 through R2 and R3. Following the change, R1 selected only the lower-cost route through R3 while maintaining IP connectivity.
+
+The original OSPF cost was restored, both equal-cost routes returned, and post-recovery connectivity tests passed.
+
+**Evidence:**
+
+- [Baseline ECMP routes](evidence/incident-03/01-Incident03-Baseline-ECMP-Routes.png)
+- [OSPF cost increased](evidence/incident-03/02-Incident03-OSPF-Cost-Increased.png)
+- [Lower-cost route selected](evidence/incident-03/03-Incident03-Lower-Cost-Route-Selected.png)
+- [Connectivity after cost change](evidence/incident-03/04-Incident03-Connectivity-After-Cost-Change.png)
+- [OSPF cost restored](evidence/incident-03/05-Incident03-OSPF-Cost-Restored.png)
+- [ECMP routes restored](evidence/incident-03/06-Incident03-ECMP-Routes-Restored.png)
+- [Post-recovery connectivity](evidence/incident-03/07-Incident03-Post-Recovery-Connectivity.png)
+
 
 ## Technical Documentation
 
@@ -80,7 +97,8 @@ A further troubleshooting scenario will be implemented and documented.
 
 - [Recovered OSPF Baseline](NorthLink-Project02-OSPF-Baseline-Recovered.pkt)
 - [Incident 02 — Recovered Working Configuration](NorthLink-Project02-Incident-02-Working.pkt)
-
+- [Incident 03 — Recovered Working Configuration](NorthLink-Project02-Incident-03-Working.pkt)
+  
 These files allow the simulated topology and router configurations to be inspected in Cisco Packet Tracer.
 
 ## Verification Commands
@@ -112,4 +130,4 @@ OSPF convergence time, uninterrupted customer traffic and ECMP traffic distribut
 
 ## Project Status
 
-**Core implementation completed — Incidents 01 and 02 resolved; Incident 03 pending.**
+**Completed — 3/3 planned troubleshooting incidents resolved and documented.**
